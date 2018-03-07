@@ -19,11 +19,18 @@ void memory_init() {
 
 /* Return the number of consecutive blocks starting from first */
 int nb_consecutive_blocks(int first) {
-	int n_blocks = 0;
+	int n_blocks = 1;
 	int i = first;
-	while(i!=NULL_BLOCK) {
-		n_blocks++;
-		i = m.blocks[i];
+	if(first==NULL_BLOCK){
+		return 0;
+	}
+	while(m.blocks[i]!=NULL_BLOCK) {
+		if(m.blocks[i] == i+1){
+			n_blocks++;
+			i = m.blocks[i];
+		}else{
+				return n_blocks;
+		}
 	}
 	return n_blocks;
 }
@@ -37,22 +44,19 @@ void memory_reorder() {
  * return -1 in case of an error
  */
 int memory_allocate(size_t size) {
+	size = ceil((double)size/sizeof(m.blocks[0]));
 	int i = m.first_block;
+	int j = i;
 	while(i!=NULL_BLOCK) {
 		if(nb_consecutive_blocks(i)<size) {
+			j = i;
 			i = m.blocks[i];
-			return -1;
 		}
 		else{
-			int j = m.first_block;
-			if(j==i) {
-				m.first_block = m.blocks[size-1];
-			}else{
-				while(m.blocks[j]!=i) {
-					j = m.blocks[j];
-				}
+			if(m.first_block==i) {
+				m.first_block = m.blocks[i + size-1];
 			}
-			m.blocks[j]= j+size;
+			m.blocks[j] = m.blocks[i + size-1];
 			m.available_blocks -= size;
 			m.error_no = E_SUCCESS;
 			return i;
@@ -64,7 +68,15 @@ int memory_allocate(size_t size) {
 
 /* Free the block of data starting at address */
 void memory_free(int address, size_t size) {
-	/* TODO */
+	size = ceil((double)size/sizeof(m.blocks[0]));
+
+	for(int i=0; i<size-1; i++){
+		m.blocks[address+i] = address+i+1;
+	}
+	m.blocks[address+size-1] = m.first_block;
+	m.first_block = address;
+
+				m.available_blocks += size;
 }
 
 /* Print information on the available blocks of the memory allocator */
@@ -237,7 +249,6 @@ void test_exo1_out_of_memory() {
 		assert_int_equal(m.available_blocks, DEFAULT_SIZE-(i+1));
 	}
 	assert_int_equal(m.available_blocks, 0); // no more memory
-
 	/* Now, try to allocate one more byte */
 	allocated_blocks[1] = memory_allocate(1);
 	assert_int_equal(allocated_blocks[1], -1); // memory_allocate should return an error
@@ -272,7 +283,7 @@ void test_exo2_reorder() {
 	}
 	// the available blocks should be:
 	// [0] -> [2] -> [4] -> [6] -> [8] -> [10] -> [12] -> [14] -> NULL_BLOCK
-	//  memory_print();
+	// memory_print();
 
 	int res = memory_allocate(sizeof(memory_page_t)*2);
 	// allocation should fail as there's no 2 consecutive blocks
