@@ -37,7 +37,20 @@ int nb_consecutive_blocks(int first) {
 
 /* Reorder memory blocks */
 void memory_reorder() {
-	/* TODO (exercise 2) */
+	// tri_à_bulles(Tableau T)
+	//    pour i allant de taille de T - 1 à 1
+	//        pour j allant de 0 à i - 1
+	//            si T[j+1] < T[j]
+	//                échanger(T[j+1], T[j])
+	// tri_à_bulles_optimisé(Tableau T)
+  //   pour i allant de taille de T - 1 à 1
+  //       tableau_trié := vrai
+  //       pour j allant de 0 à i - 1
+  //           si T[j+1] < T[j]
+  //               échanger(T[j+1], T[j])
+  //               tableau_trié := faux
+  //       si tableau_trié
+  //           fin tri_à_bulles_optimisé
 }
 
 /* Allocate size bytes
@@ -47,8 +60,10 @@ int memory_allocate(size_t size) {
 	size = ceil((double)size/sizeof(m.blocks[0]));
 	int i = m.first_block;
 	int j = i;
+	int nb = 0;
 	while(i!=NULL_BLOCK) {
 		if(nb_consecutive_blocks(i)<size) {
+			nb++;
 			j = i;
 			i = m.blocks[i];
 		}
@@ -62,7 +77,11 @@ int memory_allocate(size_t size) {
 			return i;
 		}
 	}
-	m.error_no = E_NOMEM;
+	if(size<=nb){
+			m.error_no = E_SHOULD_PACK;
+	}else{
+			m.error_no = E_NOMEM;
+	}
 	return -1;
 }
 
@@ -77,6 +96,7 @@ void memory_free(int address, size_t size) {
 	m.first_block = address;
 
 				m.available_blocks += size;
+							m.error_no = E_SUCCESS;
 }
 
 /* Print information on the available blocks of the memory allocator */
@@ -298,6 +318,8 @@ void test_exo2_reorder() {
 	}
 	// the available blocks should be something like:
 	// [15] -> [13] -> [11] -> [9] -> [7] -> [5] -> [3] -> [1] -> [0] -> [2] -> [4] -> [6] -> [8] -> [10] -> [12] -> [14] -> NULL_BLOCK
+	memory_print();
+	memory_reorder();
 	memory_print();
 
 	// Now, there are 16 available blocks (but probably randomly distributed)
