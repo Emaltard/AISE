@@ -286,6 +286,7 @@ void test_exo1_out_of_memory() {
 		assert_int_equal(m.available_blocks, DEFAULT_SIZE-(i+1));
 	}
 	assert_int_equal(m.available_blocks, 0); // no more memory
+
 	/* Now, try to allocate one more byte */
 	allocated_blocks[1] = memory_allocate(1);
 	assert_int_equal(allocated_blocks[1], -1); // memory_allocate should return an error
@@ -320,7 +321,7 @@ void test_exo2_reorder() {
 	}
 	// the available blocks should be:
 	// [0] -> [2] -> [4] -> [6] -> [8] -> [10] -> [12] -> [14] -> NULL_BLOCK
-	// memory_print();
+	//  memory_print();
 
 	int res = memory_allocate(sizeof(memory_page_t)*2);
 	// allocation should fail as there's no 2 consecutive blocks
@@ -335,7 +336,7 @@ void test_exo2_reorder() {
 	}
 	// the available blocks should be something like:
 	// [15] -> [13] -> [11] -> [9] -> [7] -> [5] -> [3] -> [1] -> [0] -> [2] -> [4] -> [6] -> [8] -> [10] -> [12] -> [14] -> NULL_BLOCK
-	// memory_print();
+	memory_print();
 
 	// Now, there are 16 available blocks (but probably randomly distributed)
 	// This call may trigger the memory reordering function, and successfully allocate 2 blocks
@@ -345,7 +346,7 @@ void test_exo2_reorder() {
 
 	// the available blocks should be something like:
 	// [2] -> [3] -> [4] -> [5] -> [6] -> [7] -> [8] -> [9] -> [10] -> [11] -> [12] -> [13] -> [14] -> [15] -> NULL_BLOCK
-	// memory_print();
+	//memory_print();
 }
 
 int main(int argc, char**argv) {
