@@ -21,15 +21,15 @@ void memory_init() {
 int nb_consecutive_blocks(int first) {
 	int n_blocks = 1;
 	int i = first;
-	if(first==NULL_BLOCK){
+	if(first==NULL_BLOCK) {
 		return 0;
 	}
 	while(m.blocks[i]!=NULL_BLOCK) {
-		if(m.blocks[i] == i+1){
+		if(m.blocks[i] == i+1) {
 			n_blocks++;
 			i = m.blocks[i];
 		}else{
-				return n_blocks;
+			return n_blocks;
 		}
 	}
 	return n_blocks;
@@ -43,14 +43,42 @@ void memory_reorder() {
 	//            si T[j+1] < T[j]
 	//                échanger(T[j+1], T[j])
 	// tri_à_bulles_optimisé(Tableau T)
-  //   pour i allant de taille de T - 1 à 1
-  //       tableau_trié := vrai
-  //       pour j allant de 0 à i - 1
-  //           si T[j+1] < T[j]
-  //               échanger(T[j+1], T[j])
-  //               tableau_trié := faux
-  //       si tableau_trié
-  //           fin tri_à_bulles_optimisé
+	//   pour i allant de taille de T - 1 à 1
+	//       tableau_trié := vrai
+	//       pour j allant de 0 à i - 1
+	//           si T[j+1] < T[j]
+	//               échanger(T[j+1], T[j])
+	//               tableau_trié := faux
+	//       si tableau_trié
+	//           fin tri_à_bulles_optimisé
+	for(int i = m.available_blocks - 1; i>0; i--) {
+		int a = m.first_block;
+		int b = m.blocks[a];
+		int c = m.blocks[b];
+		int first;
+
+		for(int j = 0; j<m.available_blocks - 1; j++) {
+			if(a>b) {
+				if(m.first_block == a) {
+					m.first_block = b;
+					first = b;
+				}else{
+					m.blocks[first] = b;
+					first = b;
+				}
+				m.blocks[b] = a;
+				m.blocks[a] = c;
+			}else{
+				first = a;
+				a = b;
+			}
+
+			b = c;
+			if(c!=NULL_BLOCK) {
+				c = m.blocks[b];
+			}
+		}
+	}
 }
 
 /* Allocate size bytes
@@ -77,10 +105,10 @@ int memory_allocate(size_t size) {
 			return i;
 		}
 	}
-	if(size<=nb){
-			m.error_no = E_SHOULD_PACK;
+	if(size<=nb) {
+		m.error_no = E_SHOULD_PACK;
 	}else{
-			m.error_no = E_NOMEM;
+		m.error_no = E_NOMEM;
 	}
 	return -1;
 }
@@ -89,14 +117,14 @@ int memory_allocate(size_t size) {
 void memory_free(int address, size_t size) {
 	size = ceil((double)size/sizeof(m.blocks[0]));
 
-	for(int i=0; i<size-1; i++){
+	for(int i=0; i<size-1; i++) {
 		m.blocks[address+i] = address+i+1;
 	}
 	m.blocks[address+size-1] = m.first_block;
 	m.first_block = address;
 
-				m.available_blocks += size;
-							m.error_no = E_SUCCESS;
+	m.available_blocks += size;
+	m.error_no = E_SUCCESS;
 }
 
 /* Print information on the available blocks of the memory allocator */
@@ -318,8 +346,10 @@ void test_exo2_reorder() {
 	}
 	// the available blocks should be something like:
 	// [15] -> [13] -> [11] -> [9] -> [7] -> [5] -> [3] -> [1] -> [0] -> [2] -> [4] -> [6] -> [8] -> [10] -> [12] -> [14] -> NULL_BLOCK
+	printf("AVANT ALGO\n");
 	memory_print();
 	memory_reorder();
+	printf("APRES ALGO\n");
 	memory_print();
 
 	// Now, there are 16 available blocks (but probably randomly distributed)

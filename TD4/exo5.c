@@ -82,7 +82,7 @@ int main(int argc, char** argv){
 	list = insert(list, "soit");
 	list = insert(list, "avec");
 	list = insert(list, "toi");
-	list = destroy(list, "force");
+	//list = destroy(list, "force");
 	display(list);
 	return(0);
 }
